@@ -1,17 +1,3 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
-.camera-view {
-    transform: scaleX(-1);
-}
-
-/* Estilos para la consola de depuración */
-.debug-console {
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.70rem;
-    max-height: 200px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    word-break: break-all;
-}

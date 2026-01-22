@@ -1,47 +1,41 @@
-lucide.createIcons();
+// ============================================================================
+// CONFIGURACIÓN GLOBAL
+// ============================================================================
 
-// CONFIGURACIÓN
+// El modelo fue entrenado con imágenes de 64x64. Es CRUCIAL que las entradas
+// tengan exactamente este tamaño, o el cálculo matricial fallará.
 const IMG_SIZE = 64;
+
+// Mapeo de índices a etiquetas.
+// Si el modelo predice el índice 0, corresponde a 'A'. El índice 26 es 'del', etc.
 const CLASSES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'del', 'nothing', 'space'];
 
-const POTENTIAL_PATHS = [
-    'web_model/model.json',
-    'model.json',
-    'web_model/model.json',
-    'Web_Model/model.json'
-];
+// Ruta donde está el modelo.
+const MODEL_PATH = 'web_model/model.json';
 
-let model = null;
-let isWebcamActive = false;
-let webcamStream = null;
-let animationId = null;
+let model = null; // Aquí guardaremos el objeto del modelo cargado de TensorFlow
 
-const videoEl = document.getElementById('webcam');
+// ============================================================================
+// REFERENCIAS AL DOM (Interfaz de Usuario)
+// ============================================================================
 const imgEl = document.getElementById('previewImage');
 const placeholderEl = document.getElementById('placeholder');
 const resultEl = document.getElementById('predictionResult');
 const confidenceEl = document.getElementById('confidenceScore');
 const statusEl = document.getElementById('modelStatus');
 const predictBtn = document.getElementById('predictBtn');
-const loadingOverlay = document.getElementById('loadingOverlay');
 const manualUploadSection = document.getElementById('manualUploadSection');
-const debugSection = document.getElementById('debugSection');
-const debugLog = document.getElementById('debugLog');
 
+// Helper para logs
 function logDebug(msg, type = 'info') {
-    const color = type === 'error' ? 'text-red-400' : (type === 'success' ? 'text-emerald-400' : 'text-slate-300');
-    // Verificamos si debugLog existe antes de escribir (por seguridad)
-    if (debugLog) {
-        const line = document.createElement('div');
-        line.className = `${color} mb-1 border-b border-slate-800 pb-1`;
-        line.innerHTML = `> ${msg}`;
-        debugLog.appendChild(line);
-        debugLog.scrollTop = debugLog.scrollHeight;
-    }
+    console.log(`[${type.toUpperCase()}] ${msg}`);
 }
 
-// --- INICIO AUTOMÁTICO ---
+// ============================================================================
+// INICIO AUTOMÁTICO
+// ============================================================================
 window.addEventListener('DOMContentLoaded', async () => {
+    // Verificación de protocolo file:// (bloqueo CORS)
     if (window.location.protocol === 'file:') {
         logDebug("ERROR: Protocolo file:// detectado. Carga bloqueada.", 'error');
         showManualUpload();
@@ -50,100 +44,95 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// ESTRATEGIA: Descarga Híbrida (Download & Inject)
+// ============================================================================
+// CARGA DE MODELO
+// ============================================================================
 async function findAndLoadModel() {
-    let loaded = false;
-    if (debugSection) debugSection.classList.remove('hidden');
-    logDebug("Iniciando búsqueda...", 'info');
+    logDebug("Iniciando carga del modelo...", 'info');
 
+    // Cache buster para evitar que el navegador use una versión vieja
     const cacheBuster = `?t=${Date.now()}`;
 
-    for (const path of POTENTIAL_PATHS) {
+    try {
+        // Construimos la URL basada en la ruta configurada
+        const modelUrl = new URL(MODEL_PATH, window.location.href).href;
+        logDebug(`Intentando cargar desde: ${MODEL_PATH}`, 'info');
+
+        // --- PASO 1: Descargar el JSON ---
+        const response = await fetch(modelUrl + cacheBuster);
+
+        if (!response.ok) {
+            throw new Error(`Archivo JSON no encontrado (404) en ${MODEL_PATH}`);
+        }
+
+        const jsonContent = await response.text();
+        let modelData;
         try {
-            const modelUrl = new URL(path, window.location.href).href;
-            logDebug(`Probando: .../${path}`, 'info');
+            modelData = JSON.parse(jsonContent);
+        } catch (e) {
+            throw new Error("El archivo model.json está corrupto o no es un JSON válido.");
+        }
 
-            // 1. Descargar JSON
-            const response = await fetch(modelUrl + cacheBuster);
-            if (!response.ok) {
-                logDebug(`❌ JSON 404`, 'error');
-                continue;
-            }
+        logDebug(`✅ JSON descargado.`, 'success');
 
-            const jsonContent = await response.text();
-            let modelData;
-            try { modelData = JSON.parse(jsonContent); }
-            catch (e) { logDebug(`❌ JSON Inválido`, 'error'); continue; }
+        // --- PASO 2: Descargar los archivos binarios (.bin) ---
+        // Buscamos la ubicación base para descargar los .bin relativos al JSON
+        const basePath = modelUrl.substring(0, modelUrl.lastIndexOf('/') + 1);
+        const binFiles = [];
 
-            logDebug(`✅ JSON descargado.`, 'success');
+        if (modelData.weightsManifest) {
+            logDebug(`Descargando pesos binarios...`, 'info');
+            const manifest = modelData.weightsManifest;
 
-            // 2. Descargar BIN(s) Manualmente
-            const basePath = modelUrl.substring(0, modelUrl.lastIndexOf('/') + 1);
-            const binFiles = [];
+            for (const group of manifest) {
+                for (const p of group.paths) {
+                    const cleanPath = p.startsWith('./') ? p.slice(2) : p;
+                    const binUrl = basePath + cleanPath;
 
-            if (modelData.weightsManifest) {
-                logDebug(`Descargando binarios...`, 'info');
-                const manifest = modelData.weightsManifest;
+                    logDebug(`Fetching: ${cleanPath}`, 'info');
+                    const binResp = await fetch(binUrl + cacheBuster);
 
-                // Recorremos todos los manifiestos y paths
-                for (const group of manifest) {
-                    for (const p of group.paths) {
-                        // Limpiar path relativo
-                        const cleanPath = p.startsWith('./') ? p.slice(2) : p;
-                        const binUrl = basePath + cleanPath;
+                    if (!binResp.ok) throw new Error(`Binario faltante: ${cleanPath}`);
 
-                        logDebug(`Fetching: ${cleanPath}`, 'info');
-                        const binResp = await fetch(binUrl + cacheBuster);
-
-                        if (!binResp.ok) throw new Error(`Binario no encontrado: ${cleanPath}`);
-
-                        const blob = await binResp.blob();
-                        // Crear objeto File en memoria
-                        const file = new File([blob], cleanPath, { type: 'application/octet-stream' });
-                        binFiles.push(file);
-                    }
+                    const blob = await binResp.blob();
+                    // Creamos un archivo en memoria
+                    const file = new File([blob], cleanPath, { type: 'application/octet-stream' });
+                    binFiles.push(file);
                 }
             }
-
-            logDebug(`✅ Binarios descargados en memoria.`, 'success');
-
-            // 3. Parchear Arquitectura
-            patchModelArchitecture(modelData);
-            logDebug(`🔧 Parches aplicados.`, 'info');
-
-            // 4. Crear File para el JSON parcheado
-            const jsonFile = new File([JSON.stringify(modelData)], 'model.json', { type: 'application/json' });
-
-            // 5. Cargar usando IO BrowserFiles (Todo en memoria)
-            const filesToLoad = [jsonFile, ...binFiles];
-
-            model = await tf.loadLayersModel(tf.io.browserFiles(filesToLoad));
-
-            loaded = true;
-            logDebug(`🎉 MODELO CARGADO EXITOSAMENTE`, 'success');
-
-            statusEl.innerHTML = `
-            <div class="flex items-center gap-2 text-emerald-400">
-                <i data-lucide="check-circle" class="w-4 h-4"></i>
-                <span>Modelo listo</span>
-            </div>`;
-
-            predictBtn.disabled = false;
-            predictBtn.classList.remove('bg-slate-600', 'text-slate-400', 'cursor-not-allowed');
-            predictBtn.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-500');
-            predictBtn.innerText = "DETECTAR SIGNO";
-            if (isWebcamActive) predictLoop();
-
-            lucide.createIcons();
-            break;
-
-        } catch (e) {
-            logDebug(`❌ Error en intento: ${e.message}`, 'error');
         }
-    }
 
-    if (!loaded) {
-        logDebug("FATAL: No se pudo cargar el modelo.", 'error');
+        logDebug(`✅ Binarios en memoria.`, 'success');
+
+        // --- PASO 3: Corregimos incompatibilidades Keras -> TFJS en memoria
+        patchModelArchitecture(modelData);
+        logDebug(`🔧 Parches aplicados.`, 'info');
+
+        // --- PASO 4: Cargar en TensorFlow ---
+        const jsonFile = new File([JSON.stringify(modelData)], 'model.json', { type: 'application/json' });
+        const filesToLoad = [jsonFile, ...binFiles];
+
+        // Carga desde los archivos virtuales en memoria
+        model = await tf.loadLayersModel(tf.io.browserFiles(filesToLoad));
+
+        logDebug(`🎉 MODELO CARGADO EXITOSAMENTE`, 'success');
+
+        // Actualizar UI: Éxito
+        statusEl.innerHTML = `
+        <div class="flex items-center gap-2 text-emerald-400">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>Modelo listo</span>
+        </div>`;
+
+        predictBtn.disabled = false;
+        predictBtn.classList.remove('bg-slate-600', 'text-slate-400', 'cursor-not-allowed');
+        predictBtn.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-500');
+        predictBtn.innerText = "DETECTAR SIGNO";
+        lucide.createIcons();
+
+    } catch (e) {
+        // Si falla algo en el único path existente, vamos directo al error/manual
+        logDebug(`❌ Error fatal cargando el modelo: ${e.message}`, 'error');
         showManualUpload();
     }
 }
@@ -159,8 +148,11 @@ function showManualUpload() {
     predictBtn.innerText = "Sube el modelo manualmente";
 }
 
-// Función de Parcheo
+// ============================================================================
+// FUNCIÓN DE PARCHEO (Corrección de errores JSON)
+// ============================================================================
 function patchModelArchitecture(modelData) {
+    // 1. Fix batch_shape vs batchInputShape
     function fixLayers(layers) {
         if (!layers) return;
         layers.forEach(layer => {
@@ -176,6 +168,7 @@ function patchModelArchitecture(modelData) {
         fixLayers(modelData.modelTopology.model_config.config.layers);
     }
 
+    // 2. Fix prefijos en nombres de pesos
     if (modelData.weightsManifest && modelData.weightsManifest.length > 0) {
         const modelName = modelData.modelTopology?.model_config?.config?.name;
         if (modelName) {
@@ -191,7 +184,9 @@ function patchModelArchitecture(modelData) {
     }
 }
 
-// --- Carga Manual (Fallback) ---
+// ============================================================================
+// CARGA MANUAL (Fallback)
+// ============================================================================
 const manualInput = document.getElementById('modelUpload');
 if (manualInput) {
     manualInput.addEventListener('change', async (event) => {
@@ -202,7 +197,7 @@ if (manualInput) {
         const binFiles = rawFiles.filter(f => f.name.endsWith('.bin'));
 
         if (!jsonFile || binFiles.length === 0) {
-            alert("Faltan archivos (json o bin).");
+            alert("Faltan archivos (se necesita 1 .json y al menos 1 .bin).");
             return;
         }
 
@@ -218,8 +213,8 @@ if (manualInput) {
 
             const patchedBlob = new Blob([JSON.stringify(modelData)], { type: 'application/json' });
             const patchedFile = new File([patchedBlob], jsonFile.name, { type: 'application/json' });
-            const uploadFiles = [patchedFile, ...binFiles];
 
+            const uploadFiles = [patchedFile, ...binFiles];
             model = await tf.loadLayersModel(tf.io.browserFiles(uploadFiles));
 
             statusEl.innerHTML = `<span class="text-emerald-400 font-bold">¡Modelo manual cargado!</span>`;
@@ -230,27 +225,21 @@ if (manualInput) {
             predictBtn.classList.remove('bg-slate-600', 'text-slate-400', 'cursor-not-allowed');
             predictBtn.classList.add('bg-blue-600', 'text-white');
             predictBtn.innerText = "DETECTAR SIGNO";
-            if (isWebcamActive) predictLoop();
 
         } catch (e) {
             console.error(e);
             logDebug(`Error manual: ${e.message}`, 'error');
-            alert("Error: " + e.message);
+            alert("Error al cargar archivos: " + e.message);
         }
     });
 }
 
-// --- UI & Webcam ---
-// Estas funciones se asignan a window para que el HTML pueda llamarlas con onclick
-window.toggleCamera = async function () {
-    if (isWebcamActive) stopWebcam();
-    else await startWebcam();
-}
-
+// ============================================================================
+// LÓGICA DE UI E INFERENCIA
+// ============================================================================
 window.handleImageUpload = function (event) {
     const file = event.target.files[0];
     if (file) {
-        stopWebcam();
         const reader = new FileReader();
         reader.onload = (e) => {
             imgEl.src = e.target.result;
@@ -264,84 +253,35 @@ window.handleImageUpload = function (event) {
 }
 
 window.predict = async function () {
-    const isDemo = document.getElementById('demoMode').checked;
-    let imageSource = null;
-
-    if (isWebcamActive && !videoEl.paused) imageSource = videoEl;
-    else if (!imgEl.classList.contains('hidden') && imgEl.src) imageSource = imgEl;
-    else {
-        alert("Enciende la cámara o sube imagen.");
+    if (imgEl.classList.contains('hidden') || !imgEl.src) {
+        alert("Por favor sube una imagen primero.");
         return;
     }
 
-    if (isDemo) {
-        const randomChar = CLASSES[Math.floor(Math.random() * CLASSES.length)];
-        updateUI(randomChar, 0.95);
+    if (!model) {
+        alert("El modelo no está listo.");
         return;
     }
-
-    if (!model) return;
 
     tf.tidy(() => {
-        let tensor = tf.browser.fromPixels(imageSource);
+        let tensor = tf.browser.fromPixels(imgEl);
         tensor = tf.image.resizeBilinear(tensor, [IMG_SIZE, IMG_SIZE]);
         tensor = tensor.div(255.0);
         tensor = tensor.expandDims(0);
+
         const predictions = model.predict(tensor);
         const data = predictions.dataSync();
         const maxIndex = predictions.argMax(-1).dataSync()[0];
+
         updateUI(CLASSES[maxIndex] || "?", data[maxIndex]);
     });
-}
-
-window.toggleDemoMode = function () {
-    const isDemo = document.getElementById('demoMode').checked;
-    if (isDemo) {
-        predictBtn.disabled = false;
-        predictBtn.innerText = "SIMULAR";
-        predictBtn.classList.add('bg-purple-600', 'text-white');
-    } else if (!model) {
-        predictBtn.disabled = true;
-        predictBtn.innerText = "Cargando IA...";
-        predictBtn.classList.remove('bg-purple-600', 'text-white');
-    } else {
-        predictBtn.innerText = "DETECTAR SIGNO";
-        predictBtn.classList.remove('bg-purple-600');
-    }
-}
-
-async function startWebcam() {
-    try {
-        webcamStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-        videoEl.srcObject = webcamStream;
-        videoEl.classList.remove('hidden');
-        placeholderEl.classList.add('hidden');
-        imgEl.classList.add('hidden');
-        isWebcamActive = true;
-        if (model || document.getElementById('demoMode').checked) predictLoop();
-    } catch (err) {
-        alert("Error cámara: " + err.message);
-    }
-}
-
-function stopWebcam() {
-    if (webcamStream) webcamStream.getTracks().forEach(t => t.stop());
-    videoEl.classList.add('hidden');
-    placeholderEl.classList.remove('hidden');
-    isWebcamActive = false;
-    cancelAnimationFrame(animationId);
 }
 
 function updateUI(label, confidence) {
     resultEl.innerText = label;
     confidenceEl.innerText = `Confianza: ${(confidence * 100).toFixed(1)}%`;
     confidenceEl.style.opacity = "1";
-    confidenceEl.className = confidence > 0.85 ? "mt-2 font-mono text-lg text-emerald-400" : "mt-2 font-mono text-lg text-yellow-400";
-}
-
-function predictLoop() {
-    if (isWebcamActive) {
-        window.predict(); // Llamamos a la función global
-        animationId = requestAnimationFrame(predictLoop);
-    }
+    confidenceEl.className = confidence > 0.85
+        ? "mt-2 font-mono text-lg text-emerald-400"
+        : "mt-2 font-mono text-lg text-yellow-400";
 }
