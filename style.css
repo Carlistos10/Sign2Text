@@ -1,3 +1,283 @@
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* ============================================================
+   MODO EDUCATIVO (Tu CSS original adaptado)
+   ============================================================ */
+
+/* 1. Definición de Variables (Solo activas en edu-mode) */
+body.edu-mode {
+    --fondo-tarjeta: rgba(231, 231, 229, 0.9);
+    /* Un poco más opaco para legibilidad */
+    --azul: rgb(44, 66, 91);
+    --texto: rgb(44, 66, 91);
+    --texto-gris: rgb(100, 100, 100);
+    --borde: rgb(44, 66, 91);
+    --verde-exito: rgb(26, 167, 28);
+    --boton: rgb(241, 132, 72);
+
+    /* Reset de estilos del Body original */
+    background-color: transparent !important;
+    color: var(--texto) !important;
+    font-family: 'Segoe UI', system-ui, sans-serif !important;
+}
+
+/* 2. Fondo (El que me pasaste) */
+body.edu-mode::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Asegúrate de tener la imagen en esa ruta o cámbiala */
+    background: url(./img/fondo.jpeg) center/cover no-repeat;
+    opacity: 0.3;
+    z-index: -1;
+}
+
+/* 3. Header */
+body.edu-mode header h1 {
+    color: var(--azul) !important;
+    font-size: 3.6rem !important;
+    margin-top: 2rem !important;
+    margin-bottom: 2rem !important;
+    text-shadow: none !important;
+}
+
+body.edu-mode header p {
+    color: var(--texto) !important;
+}
+
+/* 4. Tarjeta Principal (Transformación Radical) */
+body.edu-mode .main-card {
+    background-color: var(--fondo-tarjeta) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--borde) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3) !important;
+    border-radius: 1.5rem !important;
+
+    /* Forzar diseño de columna única (anulando el grid original) */
+    display: flex !important;
+    flex-direction: column !important;
+    max-width: 450px !important;
+    margin: 0 auto !important;
+}
+
+/* 5. Área de Subida (.upload-area) */
+body.edu-mode .upload-area {
+    background: transparent !important;
+    /* Quitar fondo negro */
+    border: none !important;
+    padding-bottom: 0 !important;
+}
+
+body.edu-mode .section-title {
+    display: block !important;
+    /* Mostrar títulos ocultos */
+    color: var(--azul);
+    text-transform: uppercase;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+}
+
+body.edu-mode .preview-container {
+    background: transparent !important;
+    border: 1px dashed var(--borde) !important;
+    border-radius: 0.75rem !important;
+    height: auto !important;
+    min-height: 200px;
+}
+
+body.edu-mode .icon-orig {
+    color: var(--texto) !important;
+}
+
+/* 6. Input de Archivo (Restaurar estilo nativo personalizado) */
+body.edu-mode .edu-hide-label {
+    display: none !important;
+    /* Ocultar botón Tailwind */
+}
+
+body.edu-mode .edu-input-reset {
+    display: block !important;
+    /* Mostrar input nativo */
+    width: 100%;
+    color: var(--texto);
+    margin-top: 1rem;
+}
+
+/* Estilo del botón interno del input */
+body.edu-mode .edu-input-reset::file-selector-button {
+    background-color: var(--boton);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    border: none;
+    margin-right: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+/* 7. Caja de Resultados */
+body.edu-mode .result-box {
+    background-color: rgba(67, 73, 86, 0.1) !important;
+    /* Tu color rgba */
+    border: 1px solid var(--borde) !important;
+    border-radius: 1rem !important;
+    padding: 1.5rem !important;
+    margin: 1.5rem !important;
+    text-align: center;
+}
+
+body.edu-mode .edu-hide {
+    display: none !important;
+    /* Ocultar cosas tech */
+}
+
+body.edu-mode .prediction-container {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+body.edu-mode #predictionResult {
+    color: var(--azul) !important;
+    font-size: 7rem !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+    filter: drop-shadow(0 0 0 transparent) !important;
+}
+
+body.edu-mode #confidenceScore {
+    color: var(--verde-exito) !important;
+    font-weight: 550 !important;
+    opacity: 1 !important;
+}
+
+/* 8. Botón de Acción */
+body.edu-mode #predictBtn {
+    background-color: var(--boton) !important;
+    color: white !important;
+    border-radius: 0.8rem !important;
+    width: calc(100% - 3rem);
+    margin: 0 auto 1.5rem auto;
+    display: block;
+}
+
+body.edu-mode #predictBtn:disabled {
+    background-color: #ccc !important;
+    color: #666 !important;
+}
+
+/* Utilidades de visibilidad */
+body.edu-mode .edu-show {
+    display: block !important;
+}
+
+/* ============================================================
+   ESTILOS DEL FOOTER (Modo Educativo)
+   ============================================================ */
+
+/* Esto cambia el footer cuando se activa la clase .edu-mode */
+body.edu-mode footer {
+    background-color: var(--fondo-tarjeta) !important;
+    border-top: 2px dashed var(--borde) !important;
+    margin-top: 3rem;
+    color: var(--texto) !important;
+    padding-bottom: 6rem;
+    /* Espacio extra para no tapar el botón flotante */
+}
+
+body.edu-mode .footer-course {
+    color: var(--boton) !important;
+    /* Naranja */
+    font-size: 1rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0px !important;
+    text-transform: none !important;
+    /* Quitar mayúsculas forzadas */
+    margin-bottom: 1rem !important;
+    border-bottom: 1px solid var(--borde);
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+body.edu-mode .footer-authors {
+    font-size: 1.1rem;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    color: var(--azul) !important;
+}
+
+body.edu-mode .footer-authors span {
+    background: rgba(255, 255, 255, 0.5);
+    padding: 2px 10px;
+    border-radius: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================================
+   RESPONSIVIDAD MODO EDUCATIVO (Móvil y Tablets)
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    /* Ajustar márgenes globales en móvil */
+    body.edu-mode {
+        padding: 1rem 0 !important;
+    }
+
+    /* Título más pequeño */
+    body.edu-mode header h1 {
+        font-size: 2.2rem !important;
+        margin-top: 1rem !important;
+    }
+
+    /* Tarjeta principal fluida (ancho completo con margen) */
+    body.edu-mode .main-card {
+        width: 90% !important;
+        max-width: none !important;
+        margin: 0 auto !important;
+        padding: 1rem !important;
+    }
+
+    /* Input de archivo nativo más grande para tocar con el dedo */
+    body.edu-mode .edu-input-reset {
+        font-size: 0.9rem;
+    }
+
+    body.edu-mode .edu-input-reset::file-selector-button {
+        width: 100%;
+        /* Botón ancho completo en móvil */
+        margin-bottom: 0.5rem;
+        margin-right: 0;
+    }
+
+    /* Reducir tamaño de la letra de predicción */
+    body.edu-mode #predictionResult {
+        font-size: 5rem !important;
+    }
+
+    /* Ajustar Footer en móvil */
+    body.edu-mode footer {
+        margin-top: 2rem;
+        padding-bottom: 5rem;
+        /* Espacio para el botón flotante */
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    body.edu-mode .footer-authors {
+        font-size: 0.9rem !important;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    body.edu-mode .footer-authors span {
+        width: 48%;
+        /* Dos columnas de nombres en móvil */
+        box-sizing: border-box;
+        font-size: 0.8rem;
+    }
 }

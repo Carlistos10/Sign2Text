@@ -196,3 +196,35 @@ function updateUI(label, confidence) {
         ? "mt-2 font-mono text-lg text-emerald-400 font-bold"
         : "mt-2 font-mono text-lg text-yellow-400";
 }
+
+// ============================================================================
+// TOGGLE MODO EDUCATIVO
+// ============================================================================
+window.toggleMode = function () {
+    const body = document.getElementById('appBody');
+    const btnText = document.getElementById('modeText');
+    const btnIcon = document.getElementById('modeIcon');
+
+    // Alternar clase
+    body.classList.toggle('edu-mode');
+
+    // Cambiar texto del botón
+    if (body.classList.contains('edu-mode')) {
+        btnText.innerText = "Volver al Modo Tech";
+        btnIcon.innerText = "💻";
+        // Sincronizar el mensaje de estado simple
+        const statusText = document.getElementById('modelStatus').innerText;
+        document.getElementById('simpleStatus').innerText = statusText.includes("listo") ? "Modelo Listo" : "Cargando...";
+    } else {
+        btnText.innerText = "Modo Educativo";
+        btnIcon.innerText = "🎓";
+    }
+}
+
+// Hook para actualizar el estado simple en modo educativo cuando el modelo cargue
+const originalUpdateStatus = updateStatusSuccess;
+updateStatusSuccess = function () {
+    originalUpdateStatus(); // Ejecutar la original
+    const simple = document.getElementById('simpleStatus');
+    if (simple) simple.innerText = "¡Listo para usar!";
+}

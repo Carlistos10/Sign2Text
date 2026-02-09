@@ -15,88 +15,106 @@
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%2250%22 x=%2250%22 font-size=%2280%22 text-anchor=%22middle%22 dominant-baseline=%22central%22>🙌</text></svg>">
 </head>
 
-<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center py-8">
+<body id="appBody"
+    class="bg-slate-900 text-white min-h-screen flex flex-col items-center py-4 md:py-8 transition-colors duration-500 overflow-x-hidden">
 
-    <header class="text-center mb-8 px-4">
-        <h1 class="text-4xl font-bold text-blue-400 mb-2">Sign 2 Text</h1>
-        <p class="text-slate-400">Sube una imagen para detectar el signo</p>
+    <header class="text-center mb-4 md:mb-8 px-4 transition-all duration-500 w-full max-w-lg mx-auto">
+        <h1 class="text-3xl md:text-4xl font-bold text-blue-400 mb-2 edu-title">Sign 2 Text</h1>
+        <p class="text-sm md:text-base text-slate-400 edu-subtitle px-4">Sube una imagen para detectar el signo</p>
     </header>
 
-    <main class="w-full max-w-4xl bg-slate-800 rounded-2xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
+    <main
+        class="w-[95%] max-w-4xl bg-slate-800 rounded-2xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 main-card transition-all duration-500 mx-4">
 
         <div
-            class="p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-700 bg-black relative">
-            <div
-                class="relative w-full aspect-square bg-slate-900 rounded-lg overflow-hidden border-2 border-slate-700 flex items-center justify-center group">
+            class="p-4 md:p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-700 bg-black relative upload-area transition-all duration-500">
 
+            <span class="section-title hidden edu-show text-center">Subir imagen</span>
+
+            <div
+                class="relative w-full max-w-[300px] md:max-w-none aspect-square bg-slate-900 rounded-lg overflow-hidden border-2 border-slate-700 flex items-center justify-center group preview-container transition-all duration-500">
                 <img id="previewImage" class="absolute inset-0 w-full h-full object-contain hidden" alt="Vista previa">
 
                 <div id="placeholder" class="text-slate-500 flex flex-col items-center p-4 text-center">
-                    <i data-lucide="image-plus" class="w-16 h-16 mb-2 opacity-50"></i>
-                    <p class="font-semibold">Sin imagen seleccionada</p>
-                    <p class="text-xs mt-1 text-slate-600">Sube una foto para analizar</p>
-                </div>
-
-                <div id="loadingOverlay"
-                    class="absolute inset-0 bg-black/80 flex items-center justify-center hidden z-20">
-                    <div class="flex flex-col items-center">
-                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-2"></div>
-                        <p id="loadingText" class="text-blue-400 text-sm font-mono">Procesando...</p>
-                    </div>
+                    <i data-lucide="image-plus" class="w-12 h-12 md:w-16 md:h-16 mb-2 opacity-50 icon-orig"></i>
+                    <p class="font-semibold text-sm md:text-base icon-orig">Sin imagen</p>
                 </div>
             </div>
 
-            <div class="flex gap-4 mt-6 w-full justify-center">
+            <div class="flex gap-4 mt-4 md:mt-6 w-full justify-center input-container">
                 <label
-                    class="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg transition font-medium cursor-pointer w-full md:w-auto shadow-lg hover:shadow-blue-500/20">
-                    <i data-lucide="upload"></i> Seleccionar Imagen
-                    <input type="file" id="imageUpload" accept="image/*" class="hidden"
+                    class="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg transition font-medium cursor-pointer w-full text-sm md:text-base shadow-lg hover:shadow-blue-500/20 edu-hide-label text-center">
+                    <i data-lucide="upload" class="w-5 h-5"></i> Seleccionar Imagen
+                    <input type="file" id="imageUpload" accept="image/*" class="hidden edu-input-reset"
                         onchange="handleImageUpload(event)">
                 </label>
             </div>
         </div>
 
-        <div class="p-6 flex flex-col justify-between">
+        <div class="p-4 md:p-6 flex flex-col justify-between result-box transition-all duration-500 min-h-[300px]">
 
-            <div class="bg-slate-700/50 p-4 rounded-xl mb-6 border border-slate-600">
-                <h2 class="text-lg font-semibold mb-3 flex items-center gap-2 text-blue-300">
-                    <i data-lucide="cpu"></i> Estado del Sistema
+            <div class="bg-slate-700/50 p-3 md:p-4 rounded-xl mb-4 md:mb-6 border border-slate-600 edu-hide">
+                <h2 class="text-base md:text-lg font-semibold mb-2 flex items-center gap-2 text-blue-300">
+                    <i data-lucide="cpu" class="w-4 h-4"></i> Estado
                 </h2>
-
-                <div id="modelStatus" class="text-sm font-mono text-yellow-400 flex flex-col gap-2">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
-                        <span>Cargando modelo...</span>
-                    </div>
+                <div id="modelStatus" class="text-xs md:text-sm font-mono text-yellow-400 flex flex-col gap-2">
+                    <span>Cargando...</span>
                 </div>
-
-                <div id="manualUploadSection" class="mt-4 pt-4 border-t border-slate-600 hidden">
-                    <p class="text-xs text-red-300 mb-2 font-bold flex items-center gap-2">
-                        <i data-lucide="alert-triangle" class="w-4 h-4"></i> Carga fallida
-                    </p>
-                    <p class="text-xs text-slate-300 mb-2">Sube los archivos del modelo:</p>
+                <div id="manualUploadSection" class="hidden mt-2 pt-2 border-t border-slate-600">
+                    <p class="text-xs text-red-300 mb-1">Carga manual:</p>
                     <input type="file" id="modelUpload" multiple accept=".json,.bin"
-                        class="block w-full text-xs text-slate-300 file:mr-2 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer transition" />
+                        class="text-xs text-slate-300 w-full" />
                 </div>
             </div>
 
             <div
-                class="flex-grow flex flex-col items-center justify-center py-6 bg-slate-900/50 rounded-xl mb-4 border border-slate-700/50">
-                <h3 class="text-slate-400 uppercase tracking-wider text-sm font-bold mb-2">Predicción</h3>
+                class="flex-grow flex flex-col items-center justify-center py-4 md:py-6 bg-slate-900/50 rounded-xl mb-4 border border-slate-700/50 prediction-container transition-all duration-500">
+                <span class="section-title hidden edu-show" style="color: var(--texto-gris)">Predicción</span>
+
                 <div class="relative text-center">
                     <div id="predictionResult"
-                        class="text-8xl font-black text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">--</div>
+                        class="text-6xl md:text-8xl font-black text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-colors duration-500">
+                        --</div>
                 </div>
-                <div id="confidenceScore" class="mt-2 text-emerald-400 font-mono text-lg opacity-0 transition-opacity">
-                    Confianza: 0%</div>
+                <div id="confidenceScore"
+                    class="mt-2 text-emerald-400 font-mono text-base md:text-lg opacity-0 transition-opacity">Confianza:
+                    0%</div>
             </div>
 
             <button onclick="predict()" id="predictBtn" disabled
-                class="w-full py-4 bg-slate-600 text-slate-400 rounded-xl font-bold text-lg transition-all cursor-not-allowed hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed">
+                class="w-full py-3 md:py-4 bg-slate-600 text-slate-400 rounded-xl font-bold text-base md:text-lg transition-all cursor-not-allowed hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed">
                 Esperando imagen...
             </button>
+
+            <div class="hidden edu-show text-center text-xs mt-2" style="color: var(--texto);">
+                Estado: <span id="simpleStatus">Iniciando...</span>
+            </div>
         </div>
     </main>
+
+    <footer
+        class="w-full mt-8 md:mt-auto py-6 text-center text-sm text-slate-500 transition-colors duration-500 border-t border-slate-800/50 mb-16 md:mb-0">
+        <div class="max-w-4xl mx-auto px-4">
+            <p class="font-bold text-slate-400 mb-3 tracking-wide text-[10px] md:text-xs footer-course">
+                TRABAJO FINAL • CURSO SAMSUNG INNOVATION
+            </p>
+            <p class="font-bold text-slate-500 mb-3 tracking-wide text-[10px] md:text-xs footer-course">
+                Desarrollador por:
+            </p>
+            <div class="flex flex-wrap justify-center gap-x-4 md:gap-x-6 gap-y-2 footer-authors px-4">
+                <span class="whitespace-nowrap">Carlos Maranhas</span>
+                <span class="whitespace-nowrap">Yousef Arrugaeta</span>
+                <span class="whitespace-nowrap">Álvaro Mora</span>
+                <span class="whitespace-nowrap">Yun Olazabal</span>
+            </div>
+            <p class="mt-4 text-[10px] md:text-xs opacity-50">2025 - Sign2Text</p>
+        </div>
+    </footer>
+
+    <button onclick="toggleMode()"
+        class="fixed bottom-4 right-4 md:bottom-8 md:right-8 bg-white text-slate-900 p-3 md:p-4 rounded-full shadow-xl font-bold z-50 hover:scale-110 transition-transform flex items-center gap-2 text-sm md:text-base">
+        <span id="modeIcon">🎓</span> <span id="modeText" class="hidden md:inline">Modo Educativo</span>
+    </button>
 
     <script src="script.js"></script>
 </body>
