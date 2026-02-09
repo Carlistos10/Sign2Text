@@ -79,6 +79,17 @@ El objetivo principal es crear una herramienta práctica, escalable y precisa qu
 - **Vercel**
 
 ---
+
+## Reconocimiento
+
+### Al adjuntar una imagen, se reconocerá e indicará la letra a la que corresponde.
+Aunque reconoce la mayoría de imagenes, puede fallar.
+
+<p align="center">
+  <img src="img/Prueba1.png" width="500">
+  <img src="img/Prueba 2.png" width="500">
+</p>
+
 ## 👨‍💻 Créditos
 
 Este proyecto ha sido desarrollado por:
