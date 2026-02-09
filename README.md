@@ -74,7 +74,9 @@ El objetivo principal es crear una herramienta práctica, escalable y precisa qu
 - **KaggleHub**
 - 📊 Dataset: [ASL Dataset](https://www.kaggle.com/datasets/grassknoted/asl-alphabet)
 
-- **TensorFlow.js (TFJS)**
+- **TensorFlow.js**
+
+- **Vercel**
 
 ---
 ## 👨‍💻 Créditos
@@ -86,5 +88,5 @@ Este proyecto ha sido desarrollado por:
 - **Álvaro Mora Fernández**
 - **Yun Olazabal Fernández**
 
-Su trabajo, dedicación y colaboración han hecho posible la creación de este sistema de detección de lenguaje de signos basado en Inteligencia Artificial.
+Gracias a nuestro trabajo, colaboración y dedicación, hemos sido capaces de crear este sistema de detección de lenguaje de signos basado en Inteligencia Artificial.
 
