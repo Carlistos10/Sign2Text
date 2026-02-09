@@ -86,7 +86,8 @@ El objetivo principal es crear una herramienta práctica, escalable y precisa qu
 Aunque reconoce la mayoría de imagenes, puede fallar.
 
 <p align="center">
-  <img src="img/logo.jpg" width="500">
+  <img src="img/Prueba1.png" width="500">
+  <img src="img/Prueba 2.png" width="500">
 </p>
 
 ## 👨‍💻 Créditos
