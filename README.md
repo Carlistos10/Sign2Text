@@ -2,7 +2,9 @@
 
 Sistema de Inteligencia Artificial capaz de detectar e interpretar el lenguaje de signos mediante imagenes indicando la letra equivalente. Este proyecto busca mejorar la accesibilidad y reducir las barreras de comunicación para personas con discapacidad auditiva.
 
-![Detector funcionando](images/detector.png)
+<p align="center">
+  <img src="img/logo.jpg" width="500">
+</p>
 
 
 ---
@@ -18,7 +20,7 @@ El objetivo principal es crear una herramienta práctica, escalable y precisa qu
 
 ### Acceder a la página web y adjuntar una imagen
 
-🌐 Web: [Sign2Text](https://asl-integrado.vercel.app/)
+🌐 Web: [Sign2Text](https://sign-2-text.vercel.app/)
 
 ---
 
