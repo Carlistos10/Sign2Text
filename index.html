@@ -115,7 +115,7 @@
     </main>
 
     <footer
-        class="w-full mt-8 md:mt-auto py-6 text-center text-sm text-slate-500 transition-colors duration-500 border-t border-slate-800/50 mb-16 md:mb-0">
+        class="w-full mt-8 md:mt-auto pt-6 text-center text-sm text-slate-500 transition-colors duration-500 border-t border-slate-800/50 md:mb-0">
         <div class="max-w-4xl mx-auto px-4">
             <p class="font-bold text-slate-400 mb-3 tracking-wide text-[10px] md:text-xs footer-course">
                 TRABAJO FINAL • CURSO SAMSUNG INNOVATION
@@ -133,10 +133,29 @@
         </div>
     </footer>
 
-    <button onclick="toggleMode()"
-        class="fixed bottom-4 right-4 md:bottom-8 md:right-8 bg-white text-slate-900 p-3 md:p-4 rounded-full shadow-xl font-bold z-50 hover:scale-110 transition-transform flex items-center gap-2 text-sm md:text-base">
-        <span id="modeIcon">🎓</span> <span id="modeText" class="hidden md:inline">Modo Educativo</span>
-    </button>
+    <div class="dial-btn__container z-50 fixed bottom-4 right-4 md:bottom-8 md:right-8 w-14 h-14">
+
+        <button id="dialMainBtn"
+            class="dial-btn primary-btn flex items-center justify-center bg-blue-600 hover:bg-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+            <i data-lucide="plus" id="dialIcon" class="w-8 h-8 transition-transform duration-300"></i>
+        </button>
+
+        <a href="https://github.com/Carlistos10/Sign2Text" target="_blank" title="GitHub"
+            class="dial-btn dial-btn--option opt-1 flex items-center justify-center">
+            <i data-lucide="github" class="w-5 h-5"></i>
+        </a>
+
+        <button onclick="toggleMode()" title="Modo Educativo"
+            class="dial-btn dial-btn--option opt-2 flex items-center justify-center">
+            <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+        </button>
+
+        <a href="https://www.kaggle.com/datasets/grassknoted/asl-alphabet" target="_blank" title="Dataset"
+            class="dial-btn dial-btn--option opt-3 flex items-center justify-center">
+            <i data-lucide="info" class="w-5 h-5"></i>
+        </a>
+
+    </div>
 
     <script src="script.js"></script>
 </body>

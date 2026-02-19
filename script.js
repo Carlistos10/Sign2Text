@@ -252,3 +252,46 @@ window.loadPredefinedImage = function (imagePath) {
         predictBtn.classList.replace('cursor-not-allowed', 'hover:bg-blue-500');
     }
 }
+
+// ============================================================================
+// LÓGICA DEL BOTÓN DIAL INFERIOR
+// ============================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const primaryBtn = document.getElementById('dialMainBtn');
+    const dialContainer = document.querySelector('.dial-btn__container');
+    let isDialActive = false;
+
+    // Inicializar iconos de Lucide (si no están cargados ya)
+    if (window.lucide) window.lucide.createIcons();
+
+    const closeDial = () => {
+        primaryBtn.classList.remove('dial-btn--active');
+        isDialActive = false;
+        document.removeEventListener('click', handleOutsideClickDial);
+    };
+
+    const handleOutsideClickDial = (e) => {
+        if (!dialContainer.contains(e.target)) {
+            closeDial();
+        }
+    };
+
+    primaryBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!isDialActive) {
+            primaryBtn.classList.add('dial-btn--active');
+            isDialActive = true;
+            document.addEventListener('click', handleOutsideClickDial);
+        } else {
+            closeDial();
+        }
+    });
+
+    // Cerrar el dial si se hace clic en alguna de las opciones
+    const optionBtns = document.querySelectorAll('.dial-btn--option');
+    optionBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            closeDial();
+        });
+    });
+});

@@ -186,22 +186,17 @@ body.edu-mode footer {
     border-top: 2px dashed var(--borde) !important;
     margin-top: 3rem;
     color: var(--texto) !important;
-    padding-bottom: 6rem;
-    /* Espacio extra para no tapar el botón flotante */
 }
 
 body.edu-mode .footer-course {
     color: var(--boton) !important;
-    /* Naranja */
     font-size: 1rem !important;
     font-weight: 800 !important;
     letter-spacing: 0px !important;
     text-transform: none !important;
-    /* Quitar mayúsculas forzadas */
     margin-bottom: 1rem !important;
     border-bottom: 1px solid var(--borde);
     display: inline-block;
-    padding-bottom: 5px;
 }
 
 body.edu-mode .footer-authors {
@@ -301,4 +296,99 @@ body.edu-mode .edu-select {
     padding: 0.6rem !important;
     font-weight: 500;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================================
+   BOTÓN DIAL ANIMADO (Top-Left)
+   ============================================================ */
+/* Estilos compartidos */
+.dial-btn {
+    border-radius: 50%;
+    border: none;
+    position: absolute;
+    outline: 0;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Botón principal */
+.primary-btn {
+    height: 100%;
+    width: 100%;
+    color: white;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    transition: background-color 0.3s ease;
+}
+
+/* Rotación de la cruz a una 'X' */
+.primary-btn.dial-btn--active #dialIcon {
+    transform: rotate(135deg);
+}
+
+/* Opciones ocultas */
+.dial-btn--option {
+    background-color: #334155;
+    /* Color slate-700 */
+    color: #f8fafc;
+    height: 40px;
+    width: 40px;
+    z-index: 1;
+    top: 8px;
+    /* Centrado respecto al de 56px (w-14) */
+    left: 8px;
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dial-btn--option:hover {
+    background-color: #475569;
+    /* Color slate-600 */
+}
+
+/* Tiempos de retardo */
+.opt-1 {
+    transition-delay: 0.05s;
+}
+
+.opt-2 {
+    transition-delay: 0.1s;
+}
+
+.opt-3 {
+    transition-delay: 0.15s;
+}
+
+/* Coordenadas de expansión (Basado en radio de 70px) */
+.primary-btn.dial-btn--active~.opt-1 {
+    transform: translate(-70px, 0px) scale(1);
+    opacity: 1;
+}
+
+.primary-btn.dial-btn--active~.opt-2 {
+    transform: translate(-49.5px, -49.5px) scale(1);
+    opacity: 1;
+}
+
+.primary-btn.dial-btn--active~.opt-3 {
+    transform: translate(0px, -70px) scale(1);
+    opacity: 1;
+}
+
+/* --- Adaptación al Modo Educativo --- */
+body.edu-mode .primary-btn {
+    background-color: var(--boton) !important;
+    box-shadow: 0 4px 15px rgba(241, 132, 72, 0.4) !important;
+}
+
+body.edu-mode .dial-btn--option {
+    background-color: white !important;
+    color: var(--azul) !important;
+    border: 2px solid var(--borde) !important;
+}
+
+body.edu-mode .dial-btn--option:hover {
+    background-color: #f1f5f9 !important;
 }
